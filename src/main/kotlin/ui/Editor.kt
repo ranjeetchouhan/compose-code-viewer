@@ -131,16 +131,12 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
     // Sync code prop to textFieldValue
     LaunchedEffect(code) {
         if (code != textFieldValue.text) {
-            // Ensure selection is within bounds of new text
-            val currentSelection = textFieldValue.selection
-            val newSelection = TextRange(
-                start = currentSelection.start.coerceIn(0, code.length),
-                end = currentSelection.end.coerceIn(0, code.length)
-            )
-            textFieldValue = TextFieldValue(
-                text = code,
-                selection = newSelection
-            )
+            val newSelection = if (code.length >= textFieldValue.selection.max) {
+                textFieldValue.selection
+            } else {
+                TextRange(code.length)
+            }
+            textFieldValue = textFieldValue.copy(text = code, selection = newSelection)
         }
     }
     
@@ -279,18 +275,14 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
         }
     }
     
-    // Syntax Highlighting + Search Highlighting + Folding
-    val visualTransformation = remember(searchResults, currentMatchIndex, matchedBrackets, foldedLines.toList(), foldRanges) {
+    // Syntax Highlighting + Search Highlighting
+    val visualTransformation = remember(searchResults, currentMatchIndex, matchedBrackets) {
         VisualTransformation { text ->
-            try {
-                val rawText = text.text
+            val rawText = text.text
+            val annotatedString = buildAnnotatedString {
+                append(rawText)
                 
-                // TEMPORARILY DISABLE FOLDING TO DEBUG OFFSET ISSUES
-                val foldedText = rawText
-                val annotatedString = buildAnnotatedString {
-                    append(foldedText)
-                    
-                    val textToHighlight = foldedText
+                val textToHighlight = rawText
                 
                 // 1. Numbers (Blue)
                 Regex("\\b\\d+\\.?\\d*\\w*\\b").findAll(textToHighlight).forEach { match ->
@@ -363,14 +355,7 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                 }
             }
             
-            // Simple identity offset mapping (no folding)
-            val offsetMapping = OffsetMapping.Identity
-            
-            TransformedText(annotatedString, offsetMapping)
-            } catch (e: Exception) {
-                // Fallback to plain text if transformation fails
-            TransformedText(AnnotatedString(text.text), OffsetMapping.Identity)
-            }
+            TransformedText(annotatedString, OffsetMapping.Identity)
         }
     }
     
@@ -462,20 +447,13 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                     androidx.compose.foundation.text.BasicTextField(
                         value = textFieldValue,
                         onValueChange = { newValue ->
-                            // Ensure selection is within valid bounds
-                            val safeSelection = TextRange(
-                                start = newValue.selection.start.coerceIn(0, newValue.text.length),
-                                end = newValue.selection.end.coerceIn(0, newValue.text.length)
-                            )
-                            val safeValue = newValue.copy(selection = safeSelection)
-                            
-                            textFieldValue = safeValue
-                            onCodeChange(safeValue.text)
+                            textFieldValue = newValue
+                            onCodeChange(newValue.text)
                             
                             // Suggestions logic
-                            val text = safeValue.text
-                            val cursor = safeValue.selection.start
-                            if (cursor > 0 && cursor <= text.length) {
+                            val text = newValue.text
+                            val cursor = newValue.selection.start
+                            if (cursor > 0) {
                                  try {
                                      val lastWordRegex = Regex("\\w+$")
                                      val prefixMatch = lastWordRegex.find(text.substring(0, cursor))
@@ -489,14 +467,8 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                                  } catch (e: Exception) { suggestions = emptyList() }
                             } else { suggestions = emptyList() }
                         },
-                        // visualTransformation = visualTransformation,
-                        decorationBox = { innerTextField ->
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                innerTextField()
-                            }
-                        },
                         modifier = Modifier
-                            .heightIn(min = viewportHeight) // Fill height of the scrollable row (viewport)
+                            .heightIn(min = viewportHeight)
                             .widthIn(min = minEditorWidth)
                             .focusRequester(editorFocusRequester)
                             .onPreviewKeyEvent { event ->
@@ -537,14 +509,19 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                                     } else false
                                 } else false
                             },
-                        visualTransformation = visualTransformation,
                         textStyle = TextStyle(
                             fontFamily = FontFamily.Monospace,
                             fontSize = 14.sp,
                             color = textColor,
                             lineHeight = 20.sp
                         ),
-                        cursorBrush = androidx.compose.ui.graphics.SolidColor(cursorColor)
+                        cursorBrush = androidx.compose.ui.graphics.SolidColor(cursorColor),
+                        visualTransformation = visualTransformation,
+                        decorationBox = { innerTextField ->
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                innerTextField()
+                            }
+                        }
                     )
                 }
                 
@@ -579,17 +556,18 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                      }
                 }
 
-                // VerticalScrollbar (inside BoxWithConstraints for .align() scope)
-                VerticalScrollbar(
-                     adapter = rememberScrollbarAdapter(scrollState),
-                     modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
-                     style = androidx.compose.foundation.defaultScrollbarStyle().copy(
-                        thickness = 8.dp,
-                        hoverDurationMillis = 300
-                     )
-                )
         }
     }
+
+    // VerticalScrollbar (Moved out of Row)
+    VerticalScrollbar(
+        adapter = rememberScrollbarAdapter(scrollState),
+        modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+        style = androidx.compose.foundation.defaultScrollbarStyle().copy(
+            thickness = 8.dp,
+            hoverDurationMillis = 300
+        )
+    )
     
     // Search Bar Overlay (needs Box scope for alignment)
     Box(modifier = Modifier.fillMaxSize()) {

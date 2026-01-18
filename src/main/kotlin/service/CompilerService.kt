@@ -42,6 +42,7 @@ object CompilerService {
             import androidx.compose.ui.layout.*
             import androidx.compose.foundation.layout.*
             import androidx.compose.foundation.*
+            import androidx.compose.ui.geometry.*
             import androidx.compose.ui.text.font.*
             import androidx.compose.foundation.shape.*
             import androidx.compose.material.icons.*
