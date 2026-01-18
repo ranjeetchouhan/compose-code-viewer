@@ -35,6 +35,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.PointerIcon
 import service.CompilerService
+import service.UpdateChecker
 import common.ViewerContent
 import ui.Editor
 import ui.Previewer
@@ -46,10 +47,16 @@ fun App() {
     var content by remember { mutableStateOf<ViewerContent?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var warnings by remember { mutableStateOf<List<String>>(emptyList()) }
+    var updateInfo by remember { mutableStateOf<UpdateChecker.UpdateInfo?>(null) }
     
     // Unified Status State
-    var isWorking by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf("Ready") }
+    var isWorking by remember { mutableStateOf(false) }
+    
+    // Check for updates on startup
+    LaunchedEffect(Unit) {
+        updateInfo = UpdateChecker.checkForUpdates()
+    }
     var previewKey by remember { mutableStateOf(0) }
 
     // Sync Global Errors to UI
@@ -238,6 +245,15 @@ fun App() {
                     .padding(horizontal = 8.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
+                // Version and status
+                Text(
+                    text = "v${UpdateChecker.CURRENT_VERSION}",
+                    fontSize = 11.sp,
+                    color = Color(0xFF888888),
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                
                 Text(
                     text = statusMessage, 
                     fontSize = 12.sp, 
@@ -246,6 +262,31 @@ fun App() {
                 )
                 
                 androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                
+                // Update notification
+                updateInfo?.let { info ->
+                    if (info.isUpdateAvailable) {
+                        androidx.compose.material.TextButton(
+                            onClick = {
+                                try {
+                                    java.awt.Desktop.getDesktop().browse(java.net.URI(info.downloadUrl))
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                }
+                            },
+                            colors = androidx.compose.material.ButtonDefaults.textButtonColors(
+                                contentColor = Color(0xFF4CAF50)
+                            )
+                        ) {
+                            Text(
+                                text = "Update Available: ${info.latestVersion}",
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                    }
+                }
                 
                 // Search Hint
                 val os = remember { System.getProperty("os.name").lowercase() }
