@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -46,6 +50,7 @@ fun App() {
     // Unified Status State
     var isWorking by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf("Ready") }
+    var previewKey by remember { mutableStateOf(0) }
 
     // Sync Global Errors to UI
     LaunchedEffect(GlobalErrorState.hasError) {
@@ -147,6 +152,11 @@ fun App() {
                     ) 
                 },
                 actions = {
+                    // Reload Button
+                    androidx.compose.material.IconButton(onClick = { previewKey++ }) {
+                         androidx.compose.material.Icon(Icons.Default.Refresh, contentDescription = "Reload", tint = Color.LightGray)
+                    }
+
                     // Format Button
                     androidx.compose.material.Button(
                         onClick = { formatCode() },
@@ -162,18 +172,17 @@ fun App() {
                         Text("Format", fontSize = 12.sp)
                     }
                     
-                    // Run Button
-                    androidx.compose.material.Button(
+                    // Run Button (Green Play Icon)
+                    androidx.compose.material.IconButton(
                         onClick = { compile() },
-                        enabled = !isWorking,
-                        colors = androidx.compose.material.ButtonDefaults.buttonColors(
-                            backgroundColor = Color(0xFF3574F0), // IntelliJ Blue/Action
-                            contentColor = Color.White,
-                            disabledBackgroundColor = Color(0xFF4E5254)
-                        ),
-                        elevation = androidx.compose.material.ButtonDefaults.elevation(0.dp)
+                        enabled = !isWorking
                     ) {
-                        Text(if (isWorking && statusMessage == "Compiling...") "Running..." else "Run", fontSize = 12.sp)
+                        androidx.compose.material.Icon(
+                             Icons.Default.PlayArrow,
+                             contentDescription = "Run",
+                             tint = if (isWorking) Color.Gray else Color(0xFF4CAF50),
+                             modifier = Modifier.size(28.dp)
+                        )
                     }
                 }
             )
@@ -213,7 +222,9 @@ fun App() {
                     )
                     
                     Box(Modifier.fillMaxSize()) {
-                        Previewer(content, errorMessage, warnings)
+                        androidx.compose.runtime.key(previewKey) {
+                            Previewer(content, errorMessage, warnings)
+                        }
                     }
                 }
             }
@@ -235,6 +246,17 @@ fun App() {
                 )
                 
                 androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+                
+                // Search Hint
+                val os = remember { System.getProperty("os.name").lowercase() }
+                val searchHint = if (os.contains("mac")) "Cmd + F" else "Ctrl + F"
+                Text(
+                    text = "Search: $searchHint", 
+                    fontSize = 11.sp, 
+                    color = Color(0xFF666666),
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.padding(end = 12.dp)
+                )
                 
                 if (isWorking) {
                     androidx.compose.material.LinearProgressIndicator(
@@ -269,6 +291,7 @@ object GlobalErrorState {
 }
 
 fun main() {
+    System.setProperty("apple.awt.application.name", "Compose Viewer")
     Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
         // Catch exceptions on the EDT (Event Dispatch Thread) or others to prevent crash
         javax.swing.SwingUtilities.invokeLater {

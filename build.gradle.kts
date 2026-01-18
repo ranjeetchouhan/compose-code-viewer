@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.example"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -44,5 +44,9 @@ val composeCompiler = configurations.detachedConfiguration(
 
 tasks.withType<JavaExec> {
     systemProperty("compose.compiler.path", composeCompiler.singleFile.absolutePath)
-    jvmArgs("-Xmx4g")
+    val jvmArguments = mutableListOf("-Xmx4g")
+    if (System.getProperty("os.name").contains("mac", ignoreCase = true)) {
+        jvmArguments.add("-Xdock:name=Compose Viewer")
+    }
+    jvmArgs(jvmArguments)
 }

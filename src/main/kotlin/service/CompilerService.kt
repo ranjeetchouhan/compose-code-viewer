@@ -91,6 +91,30 @@ object CompilerService {
             fun max(a: Float, b: Float): Float = kotlin.math.max(a, b)
             fun min(a: Float, b: Float): Float = kotlin.math.min(a, b)
 
+            // Android Compatibility Helpers
+            fun PathMeasure.getPosTan(distance: Float, pos: FloatArray?, tan: FloatArray?): Boolean {
+                if (distance < 0 || distance > length) return false
+                if (pos != null && pos.size >= 2) {
+                    val p = getPosition(distance)
+                    pos[0] = p.x
+                    pos[1] = p.y
+                }
+                if (tan != null && tan.size >= 2) {
+                    val t = getTangent(distance)
+                    tan[0] = t.x
+                    tan[1] = t.y
+                }
+                return true
+            }
+
+            // Global Helpers for Width/Height
+            val maxWidth: Dp get() = 1000.dp
+            val maxHeight: Dp get() = 1000.dp
+            
+            // BoxScope Helpers (for code that mistakenly uses Box instead of BoxWithConstraints)
+            val BoxScope.maxWidth: Dp get() = 1000.dp
+            val BoxScope.maxHeight: Dp get() = 1000.dp
+
             $code
 
             class $className : ViewerContent {

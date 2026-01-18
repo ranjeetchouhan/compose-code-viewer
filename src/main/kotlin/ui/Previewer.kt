@@ -27,6 +27,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.foundation.layout.size
 
 @Composable
@@ -154,8 +155,9 @@ fun Previewer(content: ViewerContent?, errorMessage: String? = null, warnings: L
                  // Content Section
                  Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                      if (content != null) {
-                         // Render the user content
-                         content.Content()
+                        content.Content()
+                         
+
                      } else {
                          Text("Preview Area - Type valid code to render", color = Color.Gray)
                      }
