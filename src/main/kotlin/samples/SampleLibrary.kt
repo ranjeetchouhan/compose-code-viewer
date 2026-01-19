@@ -199,8 +199,8 @@ fun NetworkImageExample() {
 }"""
         ),
         CodeSample(
-            title = "Progress Indicator",
-            description = "Loading state with progress",
+            title = "Progress Indicators",
+            description = "Multiple progress bar styles",
             category = "Advanced",
             code = """@Composable
 fun ProgressExample() {
@@ -215,20 +215,71 @@ fun ProgressExample() {
     
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
     ) {
+        // Circular Progress
         CircularProgressIndicator(
             progress = progress,
-            modifier = Modifier.size(100.dp),
-            strokeWidth = 8.dp
+            modifier = Modifier.size(80.dp),
+            strokeWidth = 8.dp,
+            color = Color(0xFF6200EE)
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        
         Text(
             text = "${'$'}{(progress * 100).toInt()}%",
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
+        
+        // Linear Progress
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Linear Progress", fontSize = 14.sp, color = Color.Gray)
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = progress,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = Color(0xFF4CAF50)
+            )
+        }
+        
+        // Custom Styled Progress
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Custom Style", fontSize = 14.sp, color = Color.Gray)
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+                    .background(Color(0xFF2C2C2C), RoundedCornerShape(6.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress)
+                        .fillMaxHeight()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFF667eea),
+                                    Color(0xFF764ba2)
+                                )
+                            ),
+                            shape = RoundedCornerShape(6.dp)
+                        )
+                )
+            }
+        }
     }
 }"""
         ),
