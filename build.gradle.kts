@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.example"
-version = "1.0.1"
+version = "1.0.2"
 
 repositories {
     mavenCentral()
@@ -40,7 +40,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
             packageName = "ComposeViewer"
-            packageVersion = "1.0.1"
+            packageVersion = "1.0.2"
             
             modules("java.instrument", "java.logging", "java.prefs", "java.rmi", "java.scripting", "java.sql", "jdk.unsupported")
             
