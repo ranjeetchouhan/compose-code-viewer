@@ -6,7 +6,7 @@ import kotlinx.serialization.json.*
 
 object UpdateChecker {
     private const val GITHUB_API_URL = "https://api.github.com/repos/ranjeetchouhan/compose-code-viewer/releases/latest"
-    const val CURRENT_VERSION = "1.0.0"
+    const val CURRENT_VERSION = "1.0.1"
     
     data class UpdateInfo(
         val isUpdateAvailable: Boolean,

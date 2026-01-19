@@ -240,9 +240,9 @@ fun App() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(28.dp)
+                    .height(36.dp)
                     .background(Color(0xFF2B2D30)) // Match sidebar/dark theme
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
                 // Version and status
@@ -276,7 +276,8 @@ fun App() {
                             },
                             colors = androidx.compose.material.ButtonDefaults.textButtonColors(
                                 contentColor = Color(0xFF4CAF50)
-                            )
+                            ),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = "Update Available: ${info.latestVersion}",

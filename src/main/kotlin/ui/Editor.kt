@@ -754,6 +754,34 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                                             return@onPreviewKeyEvent true
                                         }
                                         
+                                        // Auto-indentation on Enter
+                                        if (event.key == Key.Enter && suggestions.isEmpty()) {
+                                            val text = textFieldValue.text
+                                            val cursor = textFieldValue.selection.start
+                                            
+                                            // Find current line start
+                                            val lineStart = text.lastIndexOf('\n', cursor - 1) + 1
+                                            val currentLine = text.substring(lineStart, cursor)
+                                            
+                                            // Calculate indentation (count leading spaces/tabs)
+                                            val indentation = currentLine.takeWhile { it == ' ' || it == '\t' }
+                                            
+                                            // Check if previous line ends with opening brace
+                                            val trimmedLine = currentLine.trim()
+                                            val extraIndent = if (trimmedLine.endsWith("{")) "    " else ""
+                                            
+                                            // Insert newline with indentation
+                                            val newText = text.substring(0, cursor) + "\n" + indentation + extraIndent + text.substring(cursor)
+                                            val newCursor = cursor + 1 + indentation.length + extraIndent.length
+                                            
+                                            textFieldValue = TextFieldValue(
+                                                text = newText,
+                                                selection = TextRange(newCursor)
+                                            )
+                                            onCodeChange(newText)
+                                            return@onPreviewKeyEvent true
+                                        }
+                                        
                                         // Autocomplete Navigation
                                         if (suggestions.isNotEmpty()) {
                                             when (event.key) {
