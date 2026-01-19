@@ -235,7 +235,7 @@ fun ProgressExample() {
         CodeSample(
             title = "Kinetic Radar",
             description = "Animated radar with sweep and pulse effects",
-            category = "Advanced",
+            category = "Animation",
             code = """@Composable
 fun KineticRadarDemo() {
 
@@ -327,6 +327,181 @@ fun KineticRadarDemo() {
                 radius = 6f,
                 center = center
             )
+        }
+    }
+}"""
+        ),
+        CodeSample(
+            title = "Quantum Wave Field",
+            description = "Flowing wave animation with layered effects",
+            category = "Animation",
+            code = """@Composable
+fun QuantumWaveField() {
+
+    val infinite = rememberInfiniteTransition(label = "wave")
+
+    val phase by infinite.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * Math.PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing)
+        ),
+        label = "phase"
+    )
+
+    val pulse by infinite.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(320.dp)
+        ) {
+
+            val centerY = size.height / 2
+            val width = size.width
+
+            repeat(6) { layer ->
+
+                val amplitude = 18f + layer * 8f
+                val frequency = 0.008f + layer * 0.002f
+                val speed = phase * (1f + layer * 0.15f)
+
+                val path = Path()
+                path.moveTo(0f, centerY)
+
+                var x = 0f
+                while (x <= width) {
+                    val y =
+                        centerY +
+                        sin(x * frequency + speed).toFloat() *
+                        amplitude *
+                        pulse
+
+                    path.lineTo(x, y)
+                    x += 6f
+                }
+
+                drawPath(
+                    path = path,
+                    color = Color(0xFF00E5FF).copy(alpha = 0.08f + layer * 0.04f),
+                    style = Stroke(
+                        width = 2.5f,
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round
+                    )
+                )
+            }
+        }
+    }
+}"""
+        ),
+        CodeSample(
+            title = "Live Stock Market",
+            description = "Animated candlestick chart with price wave",
+            category = "Advanced",
+            code = """@Composable
+fun LiveStockMarketDemo() {
+
+    val infinite = rememberInfiniteTransition(label = "market")
+
+    val time by infinite.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(5000, easing = LinearEasing)
+        ),
+        label = "time"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(320.dp)
+        ) {
+
+            val candleCount = 28
+            val candleWidth = size.width / candleCount
+            val centerY = size.height / 2
+
+            // -------- PRICE WAVE (trend) --------
+            val wavePath = Path()
+            wavePath.moveTo(0f, centerY)
+
+            for (i in 0..size.width.toInt() step 8) {
+                val y =
+                    centerY +
+                    sin(i * 0.02f + time * 6f).toFloat() * 28f
+                wavePath.lineTo(i.toFloat(), y)
+            }
+
+            drawPath(
+                path = wavePath,
+                color = Color(0xFF00E5FF),
+                style = Stroke(
+                    width = 3f,
+                    cap = StrokeCap.Round
+                )
+            )
+
+            // -------- CANDLESTICKS --------
+            repeat(candleCount) { index ->
+
+                val seed = index + time * 10f
+                val open = centerY + sin(seed).toFloat() * 40f
+                val close = centerY + sin(seed + 0.6f).toFloat() * 40f
+
+                val high = max(open, close) + 18f
+                val low = min(open, close) - 18f
+
+                val x = index * candleWidth + candleWidth / 2
+                val color =
+                    if (close > open) Color(0xFF4CAF50)
+                    else Color(0xFFFF5252)
+
+                // Wick
+                drawLine(
+                    color = color,
+                    start = Offset(x, high),
+                    end = Offset(x, low),
+                    strokeWidth = 3f
+                )
+
+                // Body
+                drawRect(
+                    color = color,
+                    topLeft = Offset(
+                        x - candleWidth * 0.25f,
+                        min(open, close)
+                    ),
+                    size = Size(
+                        candleWidth * 0.5f,
+                        abs(close - open).coerceAtLeast(6f)
+                    )
+                )
+            }
         }
     }
 }"""

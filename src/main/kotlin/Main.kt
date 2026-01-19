@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -276,18 +277,15 @@ fun App() {
                     }
 
                     // Format Button
-                    androidx.compose.material.Button(
+                    androidx.compose.material.IconButton(
                         onClick = { formatCode() },
-                        enabled = !isWorking,
-                        colors = androidx.compose.material.ButtonDefaults.buttonColors(
-                            backgroundColor = Color(0xFF4E5254),
-                            contentColor = Color.White,
-                            disabledBackgroundColor = Color(0xFF3C3F41)
-                        ),
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        elevation = androidx.compose.material.ButtonDefaults.elevation(0.dp)
+                        enabled = !isWorking
                     ) {
-                        Text("Format", fontSize = 12.sp)
+                        androidx.compose.material.Icon(
+                            Icons.Default.Code,
+                            contentDescription = "Format",
+                            tint = if (isWorking) Color.Gray else Color(0xFFBBBBBB)
+                        )
                     }
                     
                     // Reload Button
