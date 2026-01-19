@@ -19,11 +19,15 @@ out/
 
 # Logs
 *.log
+crash.log
+error.log
 
 # Temporary files
 *.tmp
 *.swp
 *~
+console_output.txt
+EDITOR_BACKUP.txt
 
 # Build outputs
 /build
