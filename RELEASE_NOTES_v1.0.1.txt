@@ -1,0 +1,35 @@
+Compose Viewer v1.0.1 - Enhanced Editor & Samples Library
+
+🎉 What's New:
+
+📚 Code Samples Library (11 Examples)
+- Basics: Hello World, Button Click
+- Layouts: Card Layout, LazyColumn List
+- Animation: Animated Counter, Kinetic Radar, Quantum Wave Field
+- Graphics: Color Gradient
+- Advanced: Network Image, Progress Indicators, Live Stock Market
+
+✨ Editor Enhancements
+- Auto-indentation on Enter (maintains indent, adds extra after `{`)
+- Format button converted to icon for cleaner UI
+- Improved button layout (Samples → Run → Format → Reload)
+
+🎨 UI Improvements
+- Professional samples menu with dark theme
+- Category headers with bullet indicators
+- Fixed status bar text clipping (increased height to 36dp)
+- Better spacing and typography
+
+🔧 Technical Improvements
+- Added TextAlign, TextOverflow, TextDecoration imports
+- Added LazyColumn and foundation.lazy imports
+- Version display and update checker
+
+📝 Documentation
+- Updated README with all features
+- Added demo screenshot
+- Added "Coming Soon" section for future releases
+
+---
+
+Full Changelog: https://github.com/ranjeetchouhan/compose-code-viewer/compare/1.0.0...1.0.1

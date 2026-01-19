@@ -95,6 +95,23 @@ object CompilerService {
             fun max(a: Float, b: Float): Float = kotlin.math.max(a, b)
             fun min(a: Float, b: Float): Float = kotlin.math.min(a, b)
 
+            // Lerp (Linear Interpolation) functions
+            fun lerp(start: Float, stop: Float, fraction: Float): Float = start + (stop - start) * fraction
+            fun lerp(start: Int, stop: Int, fraction: Float): Int = (start + (stop - start) * fraction).toInt()
+            fun lerp(start: Color, stop: Color, fraction: Float): Color {
+                val red = lerp(start.red, stop.red, fraction)
+                val green = lerp(start.green, stop.green, fraction)
+                val blue = lerp(start.blue, stop.blue, fraction)
+                val alpha = lerp(start.alpha, stop.alpha, fraction)
+                return Color(red, green, blue, alpha)
+            }
+            fun lerp(start: Offset, stop: Offset, fraction: Float): Offset {
+                return Offset(
+                    lerp(start.x, stop.x, fraction),
+                    lerp(start.y, stop.y, fraction)
+                )
+            }
+
             // Android Compatibility Helpers
             fun PathMeasure.getPosTan(distance: Float, pos: FloatArray?, tan: FloatArray?): Boolean {
                 if (distance < 0 || distance > length) return false
