@@ -695,6 +695,103 @@ fun NeuralNetworkPulseDemo() {
         }
     }
 }"""
+        ),
+        CodeSample(
+            title = "Force Directed Graph",
+            description = "Physics-based node simulation with spring forces",
+            category = "Animation",
+            code = """@Composable
+fun ForceDirectedGraph() {
+
+    data class Node(
+        var position: Offset,
+        var velocity: Offset = Offset.Zero
+    )
+
+    val nodes = remember {
+        List(22) {
+            Node(
+                position = Offset(
+                    Random.nextFloat() * 800f,
+                    Random.nextFloat() * 800f
+                )
+            )
+        }
+    }
+
+    val edges = remember {
+        nodes.flatMapIndexed { i, _ ->
+            List(2) { j -> i to Random.nextInt(nodes.size) }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(16)
+
+            val repulsion = 2800f
+            val spring = 0.0018f
+            val damping = 0.88f
+
+            // Repulsive forces
+            for (i in nodes.indices) {
+                for (j in nodes.indices) {
+                    if (i == j) continue
+
+                    val delta = nodes[i].position - nodes[j].position
+                    val distance = delta.getDistance().coerceAtLeast(24f)
+                    val force = delta / distance * (repulsion / (distance * distance))
+
+                    nodes[i].velocity += force * 0.016f
+                }
+            }
+
+            // Spring forces
+            edges.forEach { (a, b) ->
+                val delta = nodes[b].position - nodes[a].position
+                val distance = delta.getDistance()
+                val force = delta * spring * (distance - 140f)
+
+                nodes[a].velocity += force * 0.016f
+                nodes[b].velocity -= force * 0.016f
+            }
+
+            // Integrate
+            nodes.forEach {
+                it.velocity *= damping
+                it.position += it.velocity
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+
+            // Edges
+            edges.forEach { (a, b) ->
+                drawLine(
+                    color = Color(0xFF00E5FF).copy(alpha = 0.18f),
+                    start = nodes[a].position,
+                    end = nodes[b].position,
+                    strokeWidth = 1.5f
+                )
+            }
+
+            // Nodes
+            nodes.forEach {
+                drawCircle(
+                    color = Color(0xFF00E5FF),
+                    radius = 6f,
+                    center = it.position
+                )
+            }
+        }
+    }
+}"""
         )
     )
     

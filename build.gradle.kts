@@ -31,10 +31,21 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "MainKt"
+        val jvmArgs = listOf(
+            "--add-opens=java.base/java.lang=ALL-UNNAMED",
+            "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+            "--add-opens=java.base/java.io=ALL-UNNAMED",
+            "--add-opens=java.base/java.util=ALL-UNNAMED"
+        )
         nativeDistributions {
             targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
             packageName = "ComposeViewer"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.1"
+            
+            modules("java.instrument", "java.logging", "java.prefs", "java.rmi", "java.scripting", "java.sql", "jdk.unsupported")
+            
+            // Pass JVM args to the packaged app
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("src/main/resources"))
         }
     }
 }
@@ -51,3 +62,17 @@ tasks.withType<JavaExec> {
     }
     jvmArgs(jvmArguments)
 }
+
+// Task to copy compiler plugin to resources for packaged app
+val copyCompilerPlugin by tasks.registering(Copy::class) {
+    from(composeCompiler)
+    into("src/main/resources")
+    rename { "compose-compiler.jar" }
+}
+
+// Make processResources depend on this task so the file is ready before packaging
+tasks.named("processResources") {
+    dependsOn(copyCompilerPlugin)
+}
+
+

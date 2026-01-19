@@ -421,7 +421,8 @@ object GlobalErrorState {
         message = t.message ?: t.toString()
         hasError = true
         try {
-            java.io.File("error.log").appendText("${java.time.LocalDateTime.now()}: ${t.stackTraceToString()}\n")
+            val logFile = java.io.File(System.getProperty("user.home"), "ComposeViewer_error.log")
+            logFile.appendText("${java.time.LocalDateTime.now()}: ${t.stackTraceToString()}\n")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -434,17 +435,36 @@ object GlobalErrorState {
 }
 
 fun main() {
-    System.setProperty("apple.awt.application.name", "Compose Viewer")
-    Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
-        // Catch exceptions on the EDT (Event Dispatch Thread) or others to prevent crash
-        javax.swing.SwingUtilities.invokeLater {
-            GlobalErrorState.report(throwable)
+    try {
+        System.setProperty("apple.awt.application.name", "Compose Viewer")
+        
+        // Global Uncaught Exception Handler
+        Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
+            // Catch exceptions on the EDT or other threads
+            javax.swing.SwingUtilities.invokeLater {
+                GlobalErrorState.report(throwable)
+            }
         }
-    }
-    
-    application {
-        Window(onCloseRequest = ::exitApplication, title = "Compose Instant Viewer") {
-            App()
+        
+        application {
+            Window(onCloseRequest = ::exitApplication, title = "Compose Instant Viewer") {
+                App()
+            }
+        }
+    } catch (e: Throwable) {
+        // Fallback for startup crashes (e.g. ExceptionInInitializerError)
+        try {
+            val logFile = java.io.File(System.getProperty("user.home"), "ComposeViewer_crash.log")
+            logFile.appendText("Startup Crash: ${e.stackTraceToString()}\n")
+            
+            javax.swing.JOptionPane.showMessageDialog(
+                null,
+                "Startup Error: ${e.message}\nSee ${logFile.absolutePath}",
+                "Compose Viewer Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+            )
+        } catch (dialogEx: Exception) {
+            dialogEx.printStackTrace()
         }
     }
 }

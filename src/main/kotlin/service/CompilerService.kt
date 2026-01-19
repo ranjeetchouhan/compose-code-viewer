@@ -11,10 +11,34 @@ import java.io.File
 import java.net.URLClassLoader
 
 object CompilerService {
+    // Cache compiler and paths to avoid initialization overhead
+    private val compiler = K2JVMCompiler()
+    private val tempDir by lazy { 
+        java.nio.file.Files.createTempDirectory("compose_compile").toFile().apply {
+            deleteOnExit()
+        }
+    }
+    
+    // Cache classpath calculation
+    private val classpath by lazy { System.getProperty("java.class.path") }
+    private val pluginPath by lazy { 
+        System.getProperty("compose.compiler.path") ?: run {
+            // Fallback: Try to load from resources (for packaged app)
+            val resource = CompilerService::class.java.getResource("/compose-compiler.jar")
+            if (resource != null) {
+                val tempPlugin = File(tempDir, "compose-compiler.jar")
+                tempPlugin.writeBytes(resource.readBytes())
+                tempPlugin.absolutePath
+            } else {
+                println("WARNING: compose.compiler.path not set and resource not found")
+                null
+            }
+        }
+    }
+
     fun compileAndLoad(code: String): common.CompilationResult? {
         val uniqueId = System.nanoTime()
         val className = "ViewerContentImpl_$uniqueId"
-        val tempDir = java.nio.file.Files.createTempDirectory("compose_compile").toFile()
         val srcFile = File(tempDir, "$className.kt")
 
         val functionalityMatch = Regex("fun\\s+([A-Za-z0-9_]+)\\s*\\(").find(code)
@@ -72,6 +96,8 @@ object CompilerService {
             import androidx.compose.ui.text.style.TextAlign
             import androidx.compose.ui.text.style.TextOverflow
             import androidx.compose.ui.text.style.TextDecoration
+            import kotlin.random.Random
+            import kotlin.collections.*
             import common.ViewerContent
 
             // Material Design Imports (Dynamic)
@@ -154,21 +180,16 @@ object CompilerService {
         
         srcFile.writeText(source)
 
-        val pluginPath = System.getProperty("compose.compiler.path") ?: run {
-            println("WARNING: compose.compiler.path not set")
-            return null
-        }
+        if (pluginPath == null) return null
 
         val args = K2JVMCompilerArguments().apply {
             freeArgs = listOf(srcFile.absolutePath)
             destination = tempDir.absolutePath
-            classpath = System.getProperty("java.class.path")
+            classpath = this@CompilerService.classpath
             noStdlib = true
             noReflect = true
-            pluginClasspaths = arrayOf(pluginPath)
+            pluginClasspaths = arrayOf(pluginPath!!)
         }
-
-        val compiler = K2JVMCompiler()
         val errorBuilder = StringBuilder()
         val warningBuilder = StringBuilder()
         
