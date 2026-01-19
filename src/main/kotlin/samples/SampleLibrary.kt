@@ -107,35 +107,91 @@ fun ListExample() {
         ),
         CodeSample(
             title = "Animated Counter",
-            description = "Counter with smooth animation",
+            description = "Counter with visual slide transitions",
             category = "Animation",
             code = """@Composable
 fun AnimatedCounter() {
     var count by remember { mutableStateOf(0) }
-    val animatedCount by animateIntAsState(
-        targetValue = count,
-        animationSpec = tween(durationMillis = 500)
-    )
     
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
+    // Gradient background
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color(0xFFF5F7FA), Color(0xFFC3CFE2))
+                )
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "${'$'}animatedCount",
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF6200EE)
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Row {
-            Button(onClick = { count-- }) {
-                Text("-")
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Card for the counter display
+            Card(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(24.dp),
+                backgroundColor = Color.White
+            ) {
+                Box(
+                    modifier = Modifier.padding(horizontal = 48.dp, vertical = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AnimatedContent(
+                        targetState = count,
+                        transitionSpec = {
+                            if (targetState > initialState) {
+                                (slideInVertically { height -> height } + fadeIn()) togetherWith
+                                (slideOutVertically { height -> -height } + fadeOut())
+                            } else {
+                                (slideInVertically { height -> -height } + fadeIn()) togetherWith
+                                (slideOutVertically { height -> height } + fadeOut())
+                            }.using(
+                                SizeTransform(clip = false)
+                            )
+                        }
+                    ) { targetCount ->
+                        Text(
+                            text = "${'$'}targetCount",
+                            fontSize = 80.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF6200EE),
+                            style = TextStyle(
+                                shadow = Shadow(
+                                    color = Color(0x33000000),
+                                    offset = Offset(2f, 2f),
+                                    blurRadius = 4f
+                                )
+                            )
+                        )
+                    }
+                }
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Button(onClick = { count++ }) {
-                Text("+")
+            
+            Spacer(modifier = Modifier.height(48.dp))
+            
+            // Control buttons
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(32.dp)
+            ) {
+                FloatingActionButton(
+                    onClick = { count-- },
+                    backgroundColor = Color.White,
+                    contentColor = Color(0xFF6200EE),
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Icon(Icons.Default.Remove, "Decrease", modifier = Modifier.size(32.dp))
+                }
+                
+                FloatingActionButton(
+                    onClick = { count++ },
+                    backgroundColor = Color(0xFF6200EE),
+                    contentColor = Color.White,
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Icon(Icons.Default.Add, "Increase", modifier = Modifier.size(32.dp))
+                }
             }
         }
     }
