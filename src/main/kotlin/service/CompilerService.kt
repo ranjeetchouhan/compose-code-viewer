@@ -42,6 +42,7 @@ object CompilerService {
             import androidx.compose.ui.layout.*
             import androidx.compose.foundation.layout.*
             import androidx.compose.foundation.*
+            import androidx.compose.foundation.lazy.*
             import androidx.compose.ui.geometry.*
             import androidx.compose.ui.text.font.*
             import androidx.compose.foundation.shape.*
@@ -68,6 +69,9 @@ object CompilerService {
             import androidx.compose.ui.geometry.Offset
             import androidx.compose.ui.graphics.Path
             import androidx.compose.ui.graphics.PathMeasure
+            import androidx.compose.ui.text.style.TextAlign
+            import androidx.compose.ui.text.style.TextOverflow
+            import androidx.compose.ui.text.style.TextDecoration
             import common.ViewerContent
 
             // Material Design Imports (Dynamic)

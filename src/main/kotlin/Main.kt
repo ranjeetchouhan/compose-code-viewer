@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
@@ -36,6 +38,7 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.PointerIcon
 import service.CompilerService
 import service.UpdateChecker
+import samples.SampleLibrary
 import common.ViewerContent
 import ui.Editor
 import ui.Previewer
@@ -48,6 +51,7 @@ fun App() {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var warnings by remember { mutableStateOf<List<String>>(emptyList()) }
     var updateInfo by remember { mutableStateOf<UpdateChecker.UpdateInfo?>(null) }
+    var showSamplesMenu by remember { mutableStateOf(false) }
     
     // Unified Status State
     var statusMessage by remember { mutableStateOf("Ready") }
@@ -159,24 +163,103 @@ fun App() {
                     ) 
                 },
                 actions = {
-                    // Reload Button
-                    androidx.compose.material.IconButton(onClick = { previewKey++ }) {
-                         androidx.compose.material.Icon(Icons.Default.Refresh, contentDescription = "Reload", tint = Color.LightGray)
-                    }
-
-                    // Format Button
-                    androidx.compose.material.Button(
-                        onClick = { formatCode() },
-                        enabled = !isWorking,
-                        colors = androidx.compose.material.ButtonDefaults.buttonColors(
-                            backgroundColor = Color(0xFF4E5254), // Darker gray button
-                            contentColor = Color.White,
-                            disabledBackgroundColor = Color(0xFF3C3F41)
-                        ),
-                        modifier = Modifier.padding(end = 8.dp),
-                        elevation = androidx.compose.material.ButtonDefaults.elevation(0.dp)
-                    ) {
-                        Text("Format", fontSize = 12.sp)
+                    // Samples Menu
+                    Box {
+                        androidx.compose.material.Button(
+                            onClick = { showSamplesMenu = !showSamplesMenu },
+                            colors = androidx.compose.material.ButtonDefaults.buttonColors(
+                                backgroundColor = Color(0xFF3C3F41),
+                                contentColor = Color(0xFFBBBBBB)
+                            ),
+                            modifier = Modifier.padding(end = 8.dp),
+                            elevation = androidx.compose.material.ButtonDefaults.elevation(0.dp, 0.dp, 0.dp)
+                        ) {
+                            androidx.compose.foundation.layout.Row(
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text("📚", fontSize = 14.sp)
+                                Text("Samples", fontSize = 12.sp)
+                            }
+                        }
+                        
+                        androidx.compose.material.DropdownMenu(
+                            expanded = showSamplesMenu,
+                            onDismissRequest = { showSamplesMenu = false },
+                            modifier = Modifier
+                                .width(320.dp)
+                                .background(Color(0xFF2B2D30))
+                        ) {
+                            SampleLibrary.categories.forEach { category ->
+                                // Category Header
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color(0xFF313335))
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                ) {
+                                    Text(
+                                        text = category.uppercase(),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF6897BB),
+                                        letterSpacing = 0.5.sp
+                                    )
+                                }
+                                
+                                // Sample Items
+                                SampleLibrary.getSamplesByCategory(category).forEach { sample ->
+                                    androidx.compose.material.DropdownMenuItem(
+                                        onClick = {
+                                            code = sample.code
+                                            showSamplesMenu = false
+                                        },
+                                        modifier = Modifier.background(Color(0xFF2B2D30))
+                                    ) {
+                                        androidx.compose.foundation.layout.Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp),
+                                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                                        ) {
+                                            // Icon indicator
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(6.dp)
+                                                    .background(
+                                                        Color(0xFF6897BB),
+                                                        shape = androidx.compose.foundation.shape.CircleShape
+                                                    )
+                                            )
+                                            
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                            
+                                            androidx.compose.foundation.layout.Column {
+                                                Text(
+                                                    text = sample.title,
+                                                    fontSize = 13.sp,
+                                                    color = Color(0xFFCCCCCC),
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                                Text(
+                                                    text = sample.description,
+                                                    fontSize = 11.sp,
+                                                    color = Color(0xFF808080),
+                                                    modifier = Modifier.padding(top = 2.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if (category != SampleLibrary.categories.last()) {
+                                    androidx.compose.material.Divider(
+                                        color = Color(0xFF3C3F41),
+                                        thickness = 1.dp
+                                    )
+                                }
+                            }
+                        }
                     }
                     
                     // Run Button (Green Play Icon)
@@ -190,6 +273,26 @@ fun App() {
                              tint = if (isWorking) Color.Gray else Color(0xFF4CAF50),
                              modifier = Modifier.size(28.dp)
                         )
+                    }
+
+                    // Format Button
+                    androidx.compose.material.Button(
+                        onClick = { formatCode() },
+                        enabled = !isWorking,
+                        colors = androidx.compose.material.ButtonDefaults.buttonColors(
+                            backgroundColor = Color(0xFF4E5254),
+                            contentColor = Color.White,
+                            disabledBackgroundColor = Color(0xFF3C3F41)
+                        ),
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        elevation = androidx.compose.material.ButtonDefaults.elevation(0.dp)
+                    ) {
+                        Text("Format", fontSize = 12.sp)
+                    }
+                    
+                    // Reload Button
+                    androidx.compose.material.IconButton(onClick = { previewKey++ }) {
+                         androidx.compose.material.Icon(Icons.Default.Refresh, contentDescription = "Reload", tint = Color.LightGray)
                     }
                 }
             )
