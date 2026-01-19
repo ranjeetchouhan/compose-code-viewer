@@ -60,6 +60,7 @@ object CompilerService {
 
         val source = """
             import androidx.compose.runtime.Composable
+            import androidx.compose.runtime.withFrameNanos
             import androidx.compose.ui.*
             import androidx.compose.ui.unit.*
             import androidx.compose.ui.graphics.*
