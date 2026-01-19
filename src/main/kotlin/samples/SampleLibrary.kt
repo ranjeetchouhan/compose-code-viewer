@@ -556,6 +556,89 @@ fun LiveStockMarketDemo() {
         }
     }
 }"""
+        ),
+        CodeSample(
+            title = "Neural Network Pulse",
+            description = "Animated network with pulsing connections",
+            category = "Animation",
+            code = """@Composable
+fun NeuralNetworkPulseDemo() {
+
+    val infinite = rememberInfiniteTransition(label = "neural")
+
+    val time by infinite.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(6000, easing = LinearEasing)
+        ),
+        label = "time"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            val center = Offset(size.width / 2, size.height / 2)
+            val nodes = 14
+            val radius = size.minDimension / 3.2f
+
+            val points = List(nodes) { i ->
+                val angle = (2 * Math.PI / nodes * i).toFloat()
+                Offset(
+                    center.x + cos(angle) * radius,
+                    center.y + sin(angle) * radius
+                )
+            }
+
+            // Connections
+            points.forEachIndexed { i, a ->
+                points.forEachIndexed { j, b ->
+                    if (i != j && j % 3 == 0) {
+                        drawLine(
+                            color = Color(0xFF00E5FF).copy(alpha = 0.08f),
+                            start = a,
+                            end = b,
+                            strokeWidth = 1.5f
+                        )
+                    }
+                }
+            }
+
+            // Pulses
+            points.forEachIndexed { i, start ->
+
+                val target = points[(i + 3) % nodes]
+                val pulse = (time + i * 0.12f) % 1f
+
+                val x = lerp(start.x, target.x, pulse)
+                val y = lerp(start.y, target.y, pulse)
+
+                drawCircle(
+                    color = Color(0xFF00E5FF),
+                    radius = 4f,
+                    center = Offset(x, y)
+                )
+            }
+
+            // Nodes
+            points.forEach {
+                drawCircle(
+                    color = Color(0xFF00E5FF),
+                    radius = 6f,
+                    center = it
+                )
+            }
+        }
+    }
+}"""
         )
     )
     
