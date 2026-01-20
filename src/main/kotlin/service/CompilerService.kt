@@ -41,15 +41,54 @@ object CompilerService {
         val className = "ViewerContentImpl_$uniqueId"
         val srcFile = File(tempDir, "$className.kt")
 
-        // Priority 1: First @Composable function
-        // Priority 2: First plain function
+        // Extract all external types from imports to mock them
+        val rawImports = code.lines().filter { it.trim().startsWith("import ") }
+        val externalTypes = rawImports.mapNotNull { line ->
+            // Match last part of import: import a.b.Type or import a.b.Type as Alias
+            val match = Regex("import\\s+.*?\\.([A-Za-z0-9_]+)(?:\\s+as\\s+([A-Za-z0-9_]+))?\\s*$").find(line)
+            match?.let { it.groupValues[2].ifEmpty { it.groupValues[1] } }
+        }.filter { type ->
+            // Don't mock standard things we already provide
+            !type.contains("Composable") && !type.contains("Modifier") && !type.contains("Alignment") && 
+            !type.contains("Arrangement") && !type.contains("Color") && !type.contains("Font") &&
+            !type.contains("Text") && !type.contains("Button") && !type.contains("Material")
+        }.distinct()
+
+        val mockBlock = externalTypes.joinToString("\n") { type ->
+            """
+            typealias $type = Any
+            @Composable fun $type(vararg args: Any?, content: @Composable () -> Unit = {}) { content() }
+            val $type: Any get() = object {
+                override fun toString() = "$type"
+                val APPLICATION = this
+                val NETWORK = this
+                val any = this
+                operator fun get(key: String) = this
+            }
+            """.trimIndent()
+        }
+
+        // Clean up code: remove package declarations, imports
+        var cleanCode = code.lines()
+            .filter { !it.trim().startsWith("package ") }
+            .filter { !it.trim().startsWith("import ") }
+            .joinToString("\n")
+            
+        // Sanitize @Preview: Remove arguments like (device = ..., ...) as Desktop Preview doesn't support them
+        // Using a more conservative regex to avoid over-matching
+        cleanCode = cleanCode.replace(Regex("@Preview\\s*\\(([^()]*|\\([^()]*\\))*\\)", RegexOption.DOT_MATCHES_ALL), "@Preview")
+
+        // Priority 1: @Composable function with NO parameters (like a Preview)
+        // Priority 2: Any @Composable function
+        // Priority 3: First plain function
         // Fallback: "Example"
-        val composableMatch = Regex("@Composable\\s+(?:override\\s+)?fun\\s+([A-Za-z0-9_]+)").find(code)
-        val plainFunctionMatch = Regex("fun\\s+([A-Za-z0-9_]+)\\s*\\(").find(code)
+        val noArgComposableMatch = Regex("@Composable\\s+(?:override\\s+)?(?:internal\\s+|private\\s+|public\\s+)?fun\\s+([A-Za-z0-9_]+)\\s*\\(\\s*\\)").find(cleanCode)
+        val anyComposableMatch = Regex("@Composable\\s+(?:override\\s+)?(?:internal\\s+|private\\s+|public\\s+)?fun\\s+([A-Za-z0-9_]+)").find(cleanCode)
+        val plainFunctionMatch = Regex("fun\\s+([A-Za-z0-9_]+)\\s*\\(").find(cleanCode)
         
-        val functionName = (composableMatch ?: plainFunctionMatch)?.groupValues?.get(1) ?: "Example"
+        val functionName = (noArgComposableMatch ?: anyComposableMatch ?: plainFunctionMatch)?.groupValues?.get(1) ?: "Example"
         
-        val isM3 = code.contains("CardDefaults") || code.contains("MaterialTheme.colorScheme")
+        val isM3 = cleanCode.contains("CardDefaults") || cleanCode.contains("MaterialTheme.colorScheme")
         val materialImport = if (isM3) {
             val base = "import androidx.compose.material3.*"
             if (code.contains("BottomNavigation")) {
@@ -69,21 +108,16 @@ object CompilerService {
         val themeEnd = "}}"
 
         val source = """
-            import androidx.compose.runtime.Composable
-            import androidx.compose.runtime.withFrameNanos
+            import androidx.compose.runtime.*
             import androidx.compose.ui.*
             import androidx.compose.ui.unit.*
             import androidx.compose.ui.graphics.*
             import androidx.compose.ui.layout.*
             import androidx.compose.foundation.layout.*
-            import androidx.compose.foundation.layout.Arrangement
-            import androidx.compose.ui.Alignment
             import androidx.compose.foundation.*
             import androidx.compose.foundation.lazy.*
             import androidx.compose.ui.geometry.*
-            import androidx.compose.ui.graphics.Color
             import androidx.compose.ui.text.font.*
-            import androidx.compose.ui.text.font.FontWeight
             import androidx.compose.foundation.shape.*
             import androidx.compose.material.icons.*
             import androidx.compose.material.icons.filled.*
@@ -93,15 +127,11 @@ object CompilerService {
             import androidx.compose.animation.*
             import androidx.compose.animation.core.*
             import kotlin.math.*
-            import androidx.compose.runtime.getValue
-            import androidx.compose.runtime.setValue
-            import androidx.compose.runtime.remember
-            import androidx.compose.runtime.mutableStateOf
-            import androidx.compose.runtime.LaunchedEffect
-            import androidx.compose.runtime.rememberCoroutineScope
             import kotlinx.coroutines.delay
             import kotlinx.coroutines.launch
             import androidx.compose.ui.platform.LocalDensity
+            import androidx.compose.desktop.ui.tooling.preview.Preview
+            $materialImport
             import androidx.compose.ui.graphics.drawscope.*
             import androidx.compose.ui.graphics.vector.*
             import androidx.compose.ui.draw.*
@@ -185,7 +215,37 @@ object CompilerService {
             val BoxScope.maxWidth: Dp get() = 1000.dp
             val BoxScope.maxHeight: Dp get() = 1000.dp
 
-            $code
+            // Android Compatibility Mocks
+            fun stringResource(id: Int): String = "Mock String"
+            fun stringResource(id: Int, vararg args: Any): String = "Mock String"
+            object R {
+                object string { val any = 0; operator fun get(name: String) = 0 }
+                object drawable { val any = 0; operator fun get(name: String) = 0 }
+                object color { val any = 0; operator fun get(name: String) = 0 }
+                object dimen { val any = 0; operator fun get(name: String) = 0 }
+                object bool { val any = 0; operator fun get(name: String) = 0; val application_type = 0; val network_type = 0 }
+                object integer { val any = 0; operator fun get(name: String) = 0 }
+                val interceptor_type = 0
+                val application_type = 0
+                val network_type = 0
+                val do_http_activity = 0
+                val do_graphql_activity = 0
+                val launch_chucker_directly = 0
+                val export_to_file = 0
+                val export_to_file_har = 0
+            }
+            object Devices { val PIXEL_4 = "Pixel 4"; val NEXUS_10 = "Nexus 10"; val AUTOMOTIVE_1024p = "Auto" }
+            object Configuration { val UI_MODE_TYPE_NORMAL = 0; val UI_MODE_NIGHT_YES = 1 }
+            fun Modifier.testTag(tag: String) = this
+            fun Modifier.clearAndSetSemantics(properties: Any.() -> Unit) = this
+            var Any.contentDescription: String 
+                get() = ""
+                set(value) {}
+            
+            // External Type Mocks
+            $mockBlock
+
+            $cleanCode
 
             class $className : ViewerContent {
                 @Composable
@@ -217,7 +277,7 @@ object CompilerService {
         val warningBuilder = StringBuilder()
         
         // Dynamic line offset calculation
-        val codeStart = source.indexOf(code)
+        val codeStart = source.indexOf(cleanCode)
         val headerOffset = if (codeStart != -1) source.substring(0, codeStart).lines().size - 1 else 0
 
         val collector = object : MessageCollector {
