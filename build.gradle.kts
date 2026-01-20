@@ -1,11 +1,15 @@
 plugins {
-    kotlin("jvm") version "1.9.22"
-    id("org.jetbrains.compose") version "1.6.0"
+    kotlin("jvm") version "2.1.10"
+    id("org.jetbrains.compose") version "1.7.3"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.10"
 }
 
 group = "com.example"
 version = "1.0.2"
 
+kotlin {
+    jvmToolchain(17)
+}
 repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
@@ -14,35 +18,41 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
-    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")
-    implementation("org.jetbrains.compose.material:material:1.6.0")
-    implementation("org.jetbrains.compose.material3:material3:1.6.0")
-    implementation("org.jetbrains.compose.ui:ui:1.6.0")
-    implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.6.0")
-    implementation("org.jetbrains.compose.material:material-icons-extended:1.6.0")
-    implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha06")
-    implementation("io.coil-kt.coil3:coil-network-ktor:3.0.0-alpha06")
-    implementation("io.ktor:ktor-client-cio:2.3.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation("com.facebook:ktfmt:0.44")
+    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.1.10")
+    implementation("org.jetbrains.compose.material:material:1.7.3")
+    implementation("org.jetbrains.compose.material3:material3:1.7.3")
+    implementation("org.jetbrains.compose.ui:ui:1.7.3")
+    implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.7.3")
+    implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0")
+    implementation("io.coil-kt.coil3:coil-network-ktor3:3.0.0")
+    implementation("io.ktor:ktor-client-cio:3.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("com.facebook:ktfmt:0.53")
 }
 
 compose.desktop {
     application {
         mainClass = "MainKt"
-        val jvmArgs = listOf(
+        jvmArgs(
             "--add-opens=java.base/java.lang=ALL-UNNAMED",
             "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
             "--add-opens=java.base/java.io=ALL-UNNAMED",
-            "--add-opens=java.base/java.util=ALL-UNNAMED"
+            "--add-opens=java.base/java.util=ALL-UNNAMED",
+            "-Xmx4g"
         )
         nativeDistributions {
             targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
             packageName = "ComposeViewer"
-            packageVersion = "1.0.2"
+            packageVersion = "1.0.1"
+
+            macOS {
+                bundleID = "com.example.composeviewer"
+                dockName = "Compose Viewer"
+            }
             
-            modules("java.instrument", "java.logging", "java.prefs", "java.rmi", "java.scripting", "java.sql", "jdk.unsupported")
+            modules("java.desktop", "java.instrument", "java.logging", "java.prefs", "java.rmi", "java.scripting", "java.sql", "jdk.unsupported", "jdk.crypto.ec")
             
             // Pass JVM args to the packaged app
             appResourcesRootDir.set(project.layout.projectDirectory.dir("src/main/resources"))
@@ -51,7 +61,7 @@ compose.desktop {
 }
 
 val composeCompiler = configurations.detachedConfiguration(
-    dependencies.create("androidx.compose.compiler:compiler:1.5.8")
+    dependencies.create("org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:2.1.10")
 )
 
 tasks.withType<JavaExec> {
@@ -74,5 +84,8 @@ val copyCompilerPlugin by tasks.registering(Copy::class) {
 tasks.named("processResources") {
     dependsOn(copyCompilerPlugin)
 }
+
+
+
 
 

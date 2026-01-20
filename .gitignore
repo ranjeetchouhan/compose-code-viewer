@@ -36,3 +36,7 @@ EDITOR_BACKUP.txt
 
 # Local configuration
 local.properties
+
+# Build artifacts and local notes
+/dmg/
+RELEASE_NOTES*.txt

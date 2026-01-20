@@ -46,7 +46,12 @@ object CompilerService {
         
         val isM3 = code.contains("CardDefaults") || code.contains("MaterialTheme.colorScheme")
         val materialImport = if (isM3) {
-            "import androidx.compose.material3.*"
+            val base = "import androidx.compose.material3.*"
+            if (code.contains("BottomNavigation")) {
+                "$base\nimport androidx.compose.material.BottomNavigation\nimport androidx.compose.material.BottomNavigationItem"
+            } else {
+                base
+            }
         } else {
             "import androidx.compose.material.*"
         }
@@ -94,15 +99,23 @@ object CompilerService {
             import androidx.compose.ui.geometry.Offset
             import androidx.compose.ui.graphics.Path
             import androidx.compose.ui.graphics.PathMeasure
+            import androidx.compose.ui.text.*
+            import androidx.compose.ui.text.style.*
             import androidx.compose.ui.text.style.TextAlign
             import androidx.compose.ui.text.style.TextOverflow
             import androidx.compose.ui.text.style.TextDecoration
             import kotlin.random.Random
             import kotlin.collections.*
+            import coil3.request.ImageRequest
+            import coil3.request.crossfade
+            import coil3.compose.LocalPlatformContext
             import common.ViewerContent
 
             // Material Design Imports (Dynamic)
             $materialImport
+
+            // Compatibility for Android LocalContext
+            val LocalContext get() = LocalPlatformContext
 
             // Math Compatibility (Double/Float/Dp)
             operator fun Double.times(f: Float): Float = (this * f).toFloat()

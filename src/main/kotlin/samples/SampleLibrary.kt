@@ -77,6 +77,185 @@ fun CardExample() {
 }"""
         ),
         CodeSample(
+            title = "Finance Dashboard",
+            description = "Dashboard with charts and bottom navigation (Hybrid M2/M3)",
+            category = "Layouts",
+            code = """@Composable
+fun FinanceDashboardUI() {
+
+    var selectedTab by remember { mutableStateOf(0) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF7F7F7))
+    ) {
+
+        // ---------- TOP BAR ----------
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Good evening",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
+            Text(
+                text = "Ranjeet",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // ---------- BALANCE CARD ----------
+        Card(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            elevation = CardDefaults.cardElevation(8.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Text("Total Balance", color = Color.Gray)
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "₹1,24,560",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column {
+                        Text("Income", color = Color.Gray, fontSize = 12.sp)
+                        Text("₹45,000", fontWeight = FontWeight.SemiBold)
+                    }
+                    Column {
+                        Text("Expenses", color = Color.Gray, fontSize = 12.sp)
+                        Text("₹18,400", fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // ---------- QUICK ACTIONS ----------
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            QuickAction("Send", Icons.Default.Send)
+            QuickAction("Request", Icons.Default.CallReceived)
+            QuickAction("Scan", Icons.Default.QrCode)
+            QuickAction("Bills", Icons.Default.Receipt)
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // ---------- TRANSACTIONS ----------
+        Text(
+            text = "Recent Transactions",
+            modifier = Modifier.padding(horizontal = 16.dp),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+        ) {
+            TransactionItem("Swiggy", "Food", "-₹420")
+            TransactionItem("Uber", "Travel", "-₹280")
+            TransactionItem("Salary", "Income", "+₹45,000")
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        // ---------- BOTTOM NAV ----------
+        BottomNavigation(
+            backgroundColor = Color.White
+        ) {
+            BottomNavigationItem(
+                selected = selectedTab == 0,
+                onClick = { selectedTab = 0 },
+                icon = { Icon(Icons.Default.Home, null) },
+                label = { Text("Home") },
+                selectedContentColor = Color(0xFF6200EE),
+                unselectedContentColor = Color.Gray
+            )
+            BottomNavigationItem(
+                selected = selectedTab == 1,
+                onClick = { selectedTab = 1 },
+                icon = { Icon(Icons.Default.PieChart, null) },
+                label = { Text("Stats") },
+                selectedContentColor = Color(0xFF6200EE),
+                unselectedContentColor = Color.Gray
+            )
+            BottomNavigationItem(
+                selected = selectedTab == 2,
+                onClick = { selectedTab = 2 },
+                icon = { Icon(Icons.Default.Person, null) },
+                label = { Text("Profile") },
+                selectedContentColor = Color(0xFF6200EE),
+                unselectedContentColor = Color.Gray
+            )
+        }
+    }
+}
+
+@Composable
+private fun QuickAction(label: String, icon: ImageVector) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .background(Color.White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = Color(0xFF6200EE))
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(label, fontSize = 12.sp)
+    }
+}
+
+@Composable
+private fun TransactionItem(title: String, subtitle: String, amount: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
+            Text(title, fontWeight = FontWeight.SemiBold)
+            Text(subtitle, fontSize = 12.sp, color = Color.Gray)
+        }
+        Text(
+            amount,
+            fontWeight = FontWeight.SemiBold,
+            color = if (amount.startsWith("+")) Color(0xFF2E7D32) else Color.Black
+        )
+    }
+}"""
+        ),
+        CodeSample(
             title = "LazyColumn List",
             description = "Scrollable list of items",
             category = "Layouts",
@@ -226,30 +405,96 @@ fun GradientExample() {
 }"""
         ),
         CodeSample(
-            title = "Network Image",
-            description = "Load image from URL using Coil",
+            title = "Enhanced Network Image",
+            description = "Interactive image with spring animation and Coil crossfade",
             category = "Advanced",
             code = """@Composable
-fun NetworkImageExample() {
+fun EnhancedNetworkImageExample() {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    val scale by animateFloatAsState(
+        targetValue = if (isExpanded) 1.05f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f),
+        label = "scale"
+    )
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(Color(0xFFF6F6F6))
+            .padding(20.dp)
     ) {
+
         Text(
             text = "Network Image",
-            fontSize = 20.sp,
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        AsyncImage(
-            model = "https://picsum.photos/300/200",
-            contentDescription = "Random image",
+
+        Text(
+            text = "Loaded with Coil",
+            fontSize = 14.sp,
+            color = Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            elevation = 10.dp,
             modifier = Modifier
-                .size(300.dp, 200.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
+                .scale(scale)
+                .clickable { isExpanded = !isExpanded }
+        ) {
+            Box {
+
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data("https://picsum.photos/600/400")
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Random image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(320.dp, 220.dp)
+                )
+
+                // Gradient overlay
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.45f)
+                                )
+                            )
+                        )
+                )
+
+                // Caption
+                Text(
+                    text = "Tap to expand",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(12.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = if (isExpanded)
+                "Image expanded with spring animation"
+            else
+                "Tap image for interaction",
+            fontSize = 14.sp,
+            color = Color.DarkGray
         )
     }
 }"""
@@ -788,6 +1033,114 @@ fun ForceDirectedGraph() {
                     radius = 6f,
                     center = it.position
                 )
+            }
+        }
+    }
+}"""
+        ),
+        CodeSample(
+            title = "Indian Ashoka Chakra",
+            description = "Animated tricolour waves with rotating Chakra",
+            category = "Animation",
+            code = """@Composable
+fun IndianAshokaChakraAnimation() {
+
+    var rotation by remember { mutableStateOf(0f) }
+    var wave by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            withFrameNanos {
+                rotation = (rotation + 0.6f) % 360f
+                wave += 0.02f
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(320.dp)
+        ) {
+
+            val w = size.width
+            val h = size.height
+            val center = Offset(w / 2, h / 2)
+
+            // 🇮🇳 Tricolour waves
+            val stripeHeight = h / 3
+
+            listOf(
+                Color(0xFFFF9933), // Saffron
+                Color.White,
+                Color(0xFF138808)  // Green
+            ).forEachIndexed { index, color ->
+
+                val path = Path()
+                val yOffset = index * stripeHeight
+
+                path.moveTo(0f, yOffset)
+
+                var x = 0f
+                while (x <= w) {
+                    val y =
+                        yOffset +
+                        stripeHeight / 2 +
+                        sin(x * 0.015f + wave + index).toFloat() * 12f
+                    path.lineTo(x, y)
+                    x += 8f
+                }
+
+                path.lineTo(w, yOffset + stripeHeight)
+                path.lineTo(0f, yOffset + stripeHeight)
+                path.close()
+
+                drawPath(
+                    path = path,
+                    color = color.copy(alpha = 0.9f)
+                )
+            }
+
+            // Ashoka Chakra
+            val chakraRadius = 64f
+            val spokes = 24
+
+            drawCircle(
+                color = Color(0xFF000080),
+                radius = chakraRadius,
+                center = center,
+                style = Stroke(width = 4f)
+            )
+
+            // Rotating spokes
+            rotate(rotation, center) {
+                repeat(spokes) { i ->
+                    val angle = (2 * Math.PI / spokes * i).toFloat()
+
+                    val start = Offset(
+                        center.x + cos(angle) * 10f,
+                        center.y + sin(angle) * 10f
+                    )
+
+                    val end = Offset(
+                        center.x + cos(angle) * chakraRadius,
+                        center.y + sin(angle) * chakraRadius
+                    )
+
+                    drawLine(
+                        color = Color(0xFF000080),
+                        start = start,
+                        end = end,
+                        strokeWidth = 3f
+                    )
+                }
             }
         }
     }
