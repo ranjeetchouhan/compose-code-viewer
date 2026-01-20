@@ -128,13 +128,29 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
 
     // Autocomplete Keywords (rich list for suggestions)
     val keywords = listOf(
-        "Text", "Button", "Image", "Box", "Row", "Column", "Modifier", 
-        "padding", "fillMaxSize", "background", "Color", "Alignment",
-        "onClick", "fontSize", "fontWeight", "contentAlignment", 
-        "horizontalArrangement", "verticalAlignment", "shape", "elevation",
-        "Arrangement", "Center", "Start", "End", "Top", "Bottom",
-        "Card", "CardDefaults", "AsyncImage", "Icon", "Icons", "Spacer", "width", "height",
-        "val", "var", "fun", "for", "if", "else", "true", "false", "return", "when", "class", "object"
+        // Layouts & Containers
+        "Box", "Row", "Column", "Spacer", "Surface", "Scaffold", "LazyColumn", "LazyRow", "Card", "CardDefaults", "Divider", "HorizontalDivider", "VerticalDivider",
+        
+        // UI Elements
+        "Text", "Button", "Image", "AsyncImage", "Icon", "Icons", "CircularProgressIndicator", "LinearProgressIndicator", "Checkbox", "Switch", "RadioButton", "TextField", "OutlinedTextField",
+        
+        // Modifiers
+        "Modifier", "padding", "fillMaxSize", "fillMaxWidth", "fillMaxHeight", "wrapContentSize", "background", "clickable", "pointerInput", "size", "width", "height", "aspectRatio", "clip", "shadow", "alpha", "offset", "border", "zIndex", "drawBehind", "graphicsLayer",
+        
+        // Arrangement & Alignment
+        "Arrangement", "Alignment", "Center", "Start", "End", "Top", "Bottom", "CenterVertically", "CenterHorizontally", "SpaceAround", "SpaceBetween", "SpaceEvenly",
+        
+        // State & Action
+        "remember", "mutableStateOf", "getValue", "setValue", "onClick", "onValueChange", "LaunchedEffect", "DisposableEffect", "SideEffect", "rememberCoroutineScope", "withFrameNanos",
+        
+        // Typography & Style
+        "Color", "TextStyle", "MaterialTheme", "fontSize", "fontWeight", "fontStyle", "fontFamily", "AnnotatedString", "SpanStyle", "ParagraphStyle", "LocalTextStyle", "TextAlign", "TextOverflow", "TextDecoration", "shape", "elevation",
+        
+        // Graphics & Animation
+        "painterResource", "ImageVector", "rememberAsyncImagePainter", "animateFloatAsState", "animateColorAsState", "rememberInfiniteTransition", "animateValueAsState",
+        
+        // Kotlin Keywords
+        "val", "var", "fun", "for", "if", "else", "true", "false", "return", "when", "class", "object", "interface", "package", "import", "try", "catch", "is", "as", "in"
     )
     
     // Strict Kotlin Keywords for syntax highlighting (Blue)
