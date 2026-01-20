@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -316,6 +317,22 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
     }
     
     // Function to Jump to Match
+    fun saveCode(currentCode: String) {
+        val dialog = java.awt.FileDialog(null as java.awt.Frame?, "Save Code", java.awt.FileDialog.SAVE)
+        dialog.file = "Sample.kt"
+        dialog.isVisible = true
+        val directory = dialog.directory
+        val file = dialog.file
+        if (directory != null && file != null) {
+            try {
+                val dest = java.io.File(directory, file)
+                dest.writeText(currentCode)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun jumpToMatch(index: Int) {
         if (index in searchResults.indices) {
             currentMatchIndex = index
@@ -607,6 +624,9 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                     IconButton(onClick = { nextMatch() }, modifier = Modifier.size(24.dp)) {
                         Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Next", tint = Color.Gray)
                     }
+                    IconButton(onClick = { saveCode(textFieldValue.text) }, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Default.Save, contentDescription = "Save", tint = Color.Gray)
+                    }
                     IconButton(onClick = { isSearchVisible = false }, modifier = Modifier.size(24.dp)) {
                         Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
                     }
@@ -786,6 +806,12 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                                 .focusRequester(editorFocusRequester)
                                 .onPreviewKeyEvent { event ->
                                     if (event.type == KeyEventType.KeyDown) {
+                                        // Save Shortcut
+                                        if ((event.isMetaPressed || event.isCtrlPressed) && event.key == Key.S) {
+                                            saveCode(textFieldValue.text)
+                                            return@onPreviewKeyEvent true
+                                        }
+
                                         // Search Shortcuts
                                         if (event.isMetaPressed && event.key == Key.F) {
                                             isSearchVisible = !isSearchVisible

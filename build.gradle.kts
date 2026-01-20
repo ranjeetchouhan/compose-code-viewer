@@ -45,7 +45,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb)
             packageName = "ComposeViewer"
-            packageVersion = "1.0.1"
+            packageVersion = "1.0.2"
 
             macOS {
                 bundleID = "com.example.composeviewer"
