@@ -153,6 +153,33 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
         "val", "var", "fun", "for", "if", "else", "true", "false", "return", "when", "class", "object", "interface", "package", "import", "try", "catch", "is", "as", "in"
     )
     
+    // Autocomplete Snippets (Keywords with prefilled arguments)
+    // '$' is used as a cursor marker
+    val snippets = mapOf(
+        "Text" to "Text(text = \"$\")",
+        "Button" to "Button(onClick = { $ }) {\n    Text(\"Click\")\n}",
+        "Box" to "Box(modifier = Modifier.$) {\n    \n}",
+        "Row" to "Row(modifier = Modifier.$, verticalAlignment = Alignment.CenterVertically) {\n    \n}",
+        "Column" to "Column(modifier = Modifier.$, horizontalAlignment = Alignment.CenterHorizontally) {\n    \n}",
+        "LazyColumn" to "LazyColumn(modifier = Modifier.$) {\n    item {\n        \n    }\n}",
+        "LazyRow" to "LazyRow(modifier = Modifier.$) {\n    item {\n        \n    }\n}",
+        "Image" to "Image(painter = $, contentDescription = null)",
+        "AsyncImage" to "AsyncImage(model = \"$\", contentDescription = null)",
+        "Icon" to "Icon(Icons.Default.$, contentDescription = null)",
+        "Spacer" to "Spacer(modifier = Modifier.width($))",
+        "Card" to "Card(modifier = Modifier.$, elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {\n    \n}",
+        "Divider" to "Divider(modifier = Modifier.$, color = Color.Gray, thickness = 1.dp)",
+        "HorizontalDivider" to "HorizontalDivider(modifier = Modifier.$, color = Color.Gray, thickness = 1.dp)",
+        "VerticalDivider" to "VerticalDivider(modifier = Modifier.$, color = Color.Gray, thickness = 1.dp)",
+        "CircularProgressIndicator" to "CircularProgressIndicator(modifier = Modifier.size($))",
+        "LinearProgressIndicator" to "LinearProgressIndicator(modifier = Modifier.$)",
+        "IconButton" to "IconButton(onClick = { $ }) {\n    Icon(Icons.Default.Favorite, contentDescription = null)\n}",
+        "TextField" to "TextField(value = $, onValueChange = {  })",
+        "OutlinedTextField" to "OutlinedTextField(value = $, onValueChange = {  })",
+        "remember" to "remember { mutableStateOf($) }",
+        "LaunchedEffect" to "LaunchedEffect(Unit) {\n    $\n}"
+    )
+    
     // Strict Kotlin Keywords for syntax highlighting (Blue)
     val syntaxKeywords = listOf(
         "val", "var", "fun", "for", "if", "else", "true", "false", "null", 
@@ -273,8 +300,13 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
         val prefixMatch = lastWordRegex.find(text.substring(0, cursor))
         
         if (prefixMatch != null) {
-            val newText = text.replaceRange(prefixMatch.range.first, cursor, suggestion)
-            val newCursor = prefixMatch.range.first + suggestion.length
+            val template = snippets[suggestion] ?: suggestion
+            val hasMarker = template.contains("$")
+            val cleanSnippet = template.replace("$", "")
+            val markerIndex = if (hasMarker) template.indexOf("$") else cleanSnippet.length
+            
+            val newText = text.replaceRange(prefixMatch.range.first, cursor, cleanSnippet)
+            val newCursor = prefixMatch.range.first + markerIndex
             
             onCodeChange(newText)
             textFieldValue = TextFieldValue(text = newText, selection = TextRange(newCursor))
