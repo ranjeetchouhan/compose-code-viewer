@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,7 +60,7 @@ import androidx.compose.ui.platform.LocalDensity
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Editor(code: String, onCodeChange: (String) -> Unit) {
+fun Editor(code: String, onCodeChange: (String) -> Unit, onSave: () -> Unit = {}, onImport: () -> Unit = {}) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     var textFieldValue by remember { mutableStateOf(TextFieldValue(code)) }
@@ -320,23 +321,6 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
         }
     }
     
-    // Function to Jump to Match
-    fun saveCode(currentCode: String) {
-        val dialog = java.awt.FileDialog(null as java.awt.Frame?, "Save Code", java.awt.FileDialog.SAVE)
-        dialog.file = "Sample.kt"
-        dialog.isVisible = true
-        val directory = dialog.directory
-        val file = dialog.file
-        if (directory != null && file != null) {
-            try {
-                val dest = java.io.File(directory, file)
-                dest.writeText(currentCode)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
     fun jumpToMatch(index: Int) {
         if (index in searchResults.indices) {
             currentMatchIndex = index
@@ -628,26 +612,6 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                     IconButton(onClick = { nextMatch() }, modifier = Modifier.size(24.dp)) {
                         Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Next", tint = Color.Gray)
                     }
-                    TooltipArea(
-                        tooltip = {
-                            Surface(
-                                elevation = 4.dp,
-                                color = Color(0xFFF2F2F2),
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text(
-                                    text = "Save Code (Ctrl+S / Cmd+S)",
-                                    modifier = Modifier.padding(8.dp),
-                                    fontSize = 12.sp,
-                                    color = Color.Black
-                                )
-                            }
-                        }
-                    ) {
-                        IconButton(onClick = { saveCode(textFieldValue.text) }, modifier = Modifier.size(24.dp)) {
-                            Icon(Icons.Default.Save, contentDescription = "Save", tint = Color.Gray)
-                        }
-                    }
                     IconButton(onClick = { isSearchVisible = false }, modifier = Modifier.size(24.dp)) {
                         Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
                     }
@@ -829,7 +793,13 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                                     if (event.type == KeyEventType.KeyDown) {
                                         // Save Shortcut
                                         if ((event.isMetaPressed || event.isCtrlPressed) && event.key == Key.S) {
-                                            saveCode(textFieldValue.text)
+                                            onSave()
+                                            return@onPreviewKeyEvent true
+                                        }
+                                        
+                                        // Import Shortcut (Ctrl/Cmd + O)
+                                        if ((event.isMetaPressed || event.isCtrlPressed) && event.key == Key.O) {
+                                            onImport()
                                             return@onPreviewKeyEvent true
                                         }
 

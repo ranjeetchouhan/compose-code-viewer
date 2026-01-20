@@ -41,8 +41,13 @@ object CompilerService {
         val className = "ViewerContentImpl_$uniqueId"
         val srcFile = File(tempDir, "$className.kt")
 
-        val functionalityMatch = Regex("fun\\s+([A-Za-z0-9_]+)\\s*\\(").find(code)
-        val functionName = functionalityMatch?.groupValues?.get(1) ?: "Example"
+        // Priority 1: First @Composable function
+        // Priority 2: First plain function
+        // Fallback: "Example"
+        val composableMatch = Regex("@Composable\\s+(?:override\\s+)?fun\\s+([A-Za-z0-9_]+)").find(code)
+        val plainFunctionMatch = Regex("fun\\s+([A-Za-z0-9_]+)\\s*\\(").find(code)
+        
+        val functionName = (composableMatch ?: plainFunctionMatch)?.groupValues?.get(1) ?: "Example"
         
         val isM3 = code.contains("CardDefaults") || code.contains("MaterialTheme.colorScheme")
         val materialImport = if (isM3) {
@@ -71,10 +76,14 @@ object CompilerService {
             import androidx.compose.ui.graphics.*
             import androidx.compose.ui.layout.*
             import androidx.compose.foundation.layout.*
+            import androidx.compose.foundation.layout.Arrangement
+            import androidx.compose.ui.Alignment
             import androidx.compose.foundation.*
             import androidx.compose.foundation.lazy.*
             import androidx.compose.ui.geometry.*
+            import androidx.compose.ui.graphics.Color
             import androidx.compose.ui.text.font.*
+            import androidx.compose.ui.text.font.FontWeight
             import androidx.compose.foundation.shape.*
             import androidx.compose.material.icons.*
             import androidx.compose.material.icons.filled.*

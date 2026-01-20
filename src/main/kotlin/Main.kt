@@ -13,11 +13,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.TooltipArea
+import androidx.compose.foundation.TooltipPlacement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
@@ -44,6 +50,7 @@ import common.ViewerContent
 import ui.Editor
 import ui.Previewer
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview
 fun App() {
@@ -104,6 +111,47 @@ fun App() {
                 }
             }
         }.start()
+    }
+
+    fun saveCode() {
+        val dialog = java.awt.FileDialog(null as java.awt.Frame?, "Save Code", java.awt.FileDialog.SAVE)
+        dialog.file = "Sample.kt"
+        dialog.isVisible = true
+        val directory = dialog.directory
+        val file = dialog.file
+        if (directory != null && file != null) {
+            try {
+                val dest = java.io.File(directory, file)
+                dest.writeText(code)
+                statusMessage = "Code saved to ${file}"
+            } catch (e: Exception) {
+                e.printStackTrace()
+                statusMessage = "Save Failed: ${e.message}"
+            }
+        }
+    }
+
+    fun importCode() {
+        val dialog = java.awt.FileDialog(null as java.awt.Frame?, "Import Code", java.awt.FileDialog.LOAD)
+        dialog.setFilenameFilter { _, name -> name.endsWith(".kt") }
+        dialog.isVisible = true
+        val directory = dialog.directory
+        val file = dialog.file
+        if (directory != null && file != null) {
+            if (!file.lowercase().endsWith(".kt")) {
+                statusMessage = "Validation Error: Only .kt files allowed"
+                return
+            }
+            try {
+                val src = java.io.File(directory, file)
+                code = src.readText()
+                statusMessage = "Imported ${file}"
+                compile() // Trigger validation and preview
+            } catch (e: Exception) {
+                e.printStackTrace()
+                statusMessage = "Import Failed: ${e.message}"
+            }
+        }
     }
 
     fun formatCode() {
@@ -292,6 +340,58 @@ fun App() {
                     androidx.compose.material.IconButton(onClick = { previewKey++ }) {
                          androidx.compose.material.Icon(Icons.Default.Refresh, contentDescription = "Reload", tint = Color.LightGray)
                     }
+
+                    // Save Button with Hint
+                    TooltipArea(
+                        tooltip = {
+                            androidx.compose.material.Surface(
+                                elevation = 4.dp,
+                                color = Color(0xFF3C3F41),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "Save Code (Ctrl+S / Cmd+S)",
+                                    modifier = Modifier.padding(8.dp),
+                                    fontSize = 12.sp,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    ) {
+                        androidx.compose.material.IconButton(onClick = { saveCode() }) {
+                            androidx.compose.material.Icon(
+                                Icons.Default.Save,
+                                contentDescription = "Save",
+                                tint = Color(0xFFBBBBBB)
+                            )
+                        }
+                    }
+
+                    // Import Button with Hint
+                    TooltipArea(
+                        tooltip = {
+                            androidx.compose.material.Surface(
+                                elevation = 4.dp,
+                                color = Color(0xFF3C3F41),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "Import Code (Ctrl+O / Cmd+O)",
+                                    modifier = Modifier.padding(8.dp),
+                                    fontSize = 12.sp,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    ) {
+                        androidx.compose.material.IconButton(onClick = { importCode() }) {
+                            androidx.compose.material.Icon(
+                                Icons.Default.Folder,
+                                contentDescription = "Import",
+                                tint = Color(0xFFBBBBBB)
+                            )
+                        }
+                    }
                 }
             )
             
@@ -304,7 +404,7 @@ fun App() {
                 
                 Row(modifier = Modifier.fillMaxSize()) {
                     Box(Modifier.fillMaxWidth(splitRatio).fillMaxHeight()) {
-                        Editor(code) { code = it }
+                        Editor(code, onCodeChange = { code = it }, onSave = { saveCode() }, onImport = { importCode() })
                     }
                     
                     // Draggable Divider
@@ -393,6 +493,26 @@ fun App() {
                 // Search Hint
                 val os = remember { System.getProperty("os.name").lowercase() }
                 val searchHint = if (os.contains("mac")) "Cmd + F" else "Ctrl + F"
+                // Import Hint
+                val openHint = if (os.contains("mac")) "Cmd + O" else "Ctrl + O"
+                Text(
+                    text = "Import: $openHint", 
+                    fontSize = 11.sp, 
+                    color = Color(0xFF666666),
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.padding(end = 12.dp)
+                )
+
+                // Save Hint
+                val saveHint = if (os.contains("mac")) "Cmd + S" else "Ctrl + S"
+                Text(
+                    text = "Save: $saveHint", 
+                    fontSize = 11.sp, 
+                    color = Color(0xFF666666),
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.padding(end = 12.dp)
+                )
+
                 Text(
                     text = "Search: $searchHint", 
                     fontSize = 11.sp, 
