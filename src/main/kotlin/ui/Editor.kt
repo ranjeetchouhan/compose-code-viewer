@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.HorizontalScrollbar
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.TooltipArea
+import androidx.compose.foundation.TooltipPlacement
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -54,6 +57,7 @@ import androidx.compose.ui.graphics.SolidColor
 
 import androidx.compose.ui.platform.LocalDensity
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Editor(code: String, onCodeChange: (String) -> Unit) {
     val scope = rememberCoroutineScope()
@@ -624,8 +628,25 @@ fun Editor(code: String, onCodeChange: (String) -> Unit) {
                     IconButton(onClick = { nextMatch() }, modifier = Modifier.size(24.dp)) {
                         Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Next", tint = Color.Gray)
                     }
-                    IconButton(onClick = { saveCode(textFieldValue.text) }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Save, contentDescription = "Save", tint = Color.Gray)
+                    TooltipArea(
+                        tooltip = {
+                            Surface(
+                                elevation = 4.dp,
+                                color = Color(0xFFF2F2F2),
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "Save Code (Ctrl+S / Cmd+S)",
+                                    modifier = Modifier.padding(8.dp),
+                                    fontSize = 12.sp,
+                                    color = Color.Black
+                                )
+                            }
+                        }
+                    ) {
+                        IconButton(onClick = { saveCode(textFieldValue.text) }, modifier = Modifier.size(24.dp)) {
+                            Icon(Icons.Default.Save, contentDescription = "Save", tint = Color.Gray)
+                        }
                     }
                     IconButton(onClick = { isSearchVisible = false }, modifier = Modifier.size(24.dp)) {
                         Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.Gray)
