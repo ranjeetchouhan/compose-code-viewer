@@ -3,6 +3,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/ranjeetchouhan/compose-code-viewer?style=social)](https://github.com/ranjeetchouhan/compose-code-viewer/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/ranjeetchouhan/compose-code-viewer)](https://github.com/ranjeetchouhan/compose-code-viewer/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)](https://github.com/ranjeetchouhan/compose-code-viewer/releases/tag/v1.0.2)
 
 **Compose Viewer** is a real-time Jetpack Compose Desktop code editor and previewer. Write Kotlin Compose UI code and see the results instantly - perfect for prototyping, learning, and experimenting with Compose Multiplatform.
 
@@ -12,10 +13,16 @@
 
 ### Core Features
 - **Live Preview**: Instant compilation and preview as you type
+- **External Compatibility**:
+  - **Dynamic Auto-Mocking**: Automatically handles external types (e.g. `ChuckerTheme`) and Android APIs (`stringResource`, `R.string`) for easy copy-pasting from existing projects.
+  - **Smart Entry-Point**: Prioritizes no-argument `@Composable` functions (Previews) as targets.
+- **File Management**:
+  - **Save as .kt**: Persistent save icon and `Cmd+S` keyboard shortcut.
+  - **Import .kt**: Quickly open existing Compose files with `Cmd+O`.
 - **Advanced Editor**:
+  - **Intelligent Autocomplete**: Prefilled snippets for common components (`Text`, `Button`, etc.) with smart cursor placement.
   - Syntax highlighting for Kotlin/Compose
-  - Auto-indentation (maintains indentation on Enter, adds indent after `{`)
-  - Bracket matching and code folding
+  - Auto-indentation and bracket matching
   - Search & Replace (Cmd+F / Ctrl+F)
   - Line numbers
 - **Code Samples Library**: 11 ready-to-use examples across 4 categories
@@ -59,12 +66,15 @@ cd compose-code-viewer
 1. **Browse Samples**: Click the 📚 **Samples** button to explore pre-built examples
 2. **Write Code**: Type your Compose UI code in the left editor
 3. **Run**: Click the ▶️ **Run** button to compile and preview
-4. **Format**: Click the **</>** icon to auto-format your code
-5. **Reload**: Click 🔄 to refresh the preview
-6. **Search**: Press `Cmd+F` (Mac) or `Ctrl+F` (Windows)
+4. **Save/Import**: Use the 💾 and 📂 icons (or `Cmd+S`/`Cmd+O`) to manage your files
+5. **Format**: Click the **</>** icon to auto-format your code
+6. **Reload**: Click 🔄 to refresh the preview
+7. **Search**: Press `Cmd+F` (Mac) or `Ctrl+F` (Windows)
 
 ### Keyboard Shortcuts
 - **Search**: `Cmd+F` (Mac) / `Ctrl+F` (Windows)
+- **Save**: `Cmd+S` (Mac) / `Ctrl+S` (Windows)
+- **Import**: `Cmd+O` (Mac) / `Ctrl+O` (Windows)
 - **Next Match**: `Enter`
 - **Previous Match**: `Shift+Enter`
 - **Navigate Search**: `Arrow Up/Down`
@@ -75,15 +85,14 @@ Features planned for future releases:
 
 - **v1.1.0**:
   - More code samples (Material 3 components, complex animations)
-  - Code snippets and templates
   - Export preview as image
   - Dark/Light theme toggle
+  - Advanced debugging tools
 
 - **v1.2.0**:
   - Multi-file project support
-  - Import external dependencies
-  - Code completion and suggestions
-  - Debugging tools
+  - Integrated Git support
+  - Real-time collaboration
 
 - **Future**:
   - Collaborative editing
