@@ -79,26 +79,15 @@ cd compose-code-viewer
 - **Previous Match**: `Shift+Enter`
 - **Navigate Search**: `Arrow Up/Down`
 
-## 🔮 Coming Soon
+## 🔮 Future Roadmap
 
-Features planned for future releases:
+We're constantly working to make Compose Viewer better. Here's what's on our horizon:
 
-- **v1.1.0**:
-  - More code samples (Material 3 components, complex animations)
-  - Export preview as image
-  - Dark/Light theme toggle
-  - Advanced debugging tools
-
-- **v1.2.0**:
-  - Multi-file project support
-  - Integrated Git support
-  - Real-time collaboration
-
-- **Future**:
-  - Collaborative editing
-  - Cloud sync for code snippets
-  - Plugin system
-  - Mobile preview (Android/iOS)
+- **More Samples**: New Material 3 components and advanced animation examples.
+- **Export Tools**: Save your previews as high-quality images.
+- **Visual Themes**: Toggle between Dark and Light modes.
+- **Project Support**: Working with multiple files and folders.
+- **Mobile Preview**: Live preview for Android and iOS devices.
 
 ## 🤝 Contributing
 
